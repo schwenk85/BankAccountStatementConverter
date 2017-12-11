@@ -6,23 +6,37 @@ namespace BankAccountStatementConverter
 {
     public class Program
     {
+        private static List<RaibaAccountStatement> _accountStatements;
+
         static void Main(string[] args)
         {
-            // PDFs einlesen
+            //TODO: testen
+
+            _accountStatements = new List<RaibaAccountStatement>();
+
+            ReadPdfs();
+            CreateAccountStatementsCsv();
+            CreateTransactionsCsv();
+            CreateGnuCashTransactionsCsv();
+        }
+
+        private static void ReadPdfs()
+        {
             var pdfFullFileNames = Directory.GetFiles(
                 Directory.GetCurrentDirectory(), "*.pdf", SearchOption.AllDirectories);
-
-            var accountStatements = new List<RaibaAccountStatement>();
 
             foreach (var pdfFullFileName in pdfFullFileNames)
             {
                 var accountStatement = new RaibaAccountStatement();
-                accountStatement.TryParseFromPdf(pdfFullFileName);
-                accountStatements.Add(accountStatement);
+                accountStatement.ParseFromPdf(pdfFullFileName);
+                _accountStatements.Add(accountStatement);
             }
+        }
 
-            // Transactions CSV erzeugen
-            var csvAccountStatementsFullFileName = Directory.GetCurrentDirectory() + @"\AccountStatements.csv";
+        private static void CreateAccountStatementsCsv()
+        {
+            var csvAccountStatementsFullFileName =
+                Directory.GetCurrentDirectory() + @"\AccountStatements.csv";
 
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine(string.Join(
@@ -42,29 +56,71 @@ namespace BankAccountStatementConverter
                 "newBal.",
                 "newBal.OK",
                 "transactions",
-                "trans.Count.OK"
+                "trans.Count",
+                "transactions.OK"
             ));
-            foreach (var accountStatement in accountStatements)
+
+            foreach (var accountStatement in _accountStatements)
             {
                 stringBuilder.AppendLine(string.Join(";", accountStatement.GetAccountStatementInfos()));
             }
 
             File.WriteAllText(csvAccountStatementsFullFileName, stringBuilder.ToString());
+        }
 
-            // Transactions CSV erzeugen
+        private static void CreateTransactionsCsv()
+        {
             var csvTransactionsFullFileName = Directory.GetCurrentDirectory() + @"\Transactions.csv";
-            
-            stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine(string.Join(";", "Date", "Amount", "Title", "SenderOrRecipient", "Purpose"));
-            foreach (var accountStatement in accountStatements)
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine(string.Join(
+                ";",
+                "Date",
+                "Amount",
+                "Balance",
+                "Title",
+                "SenderOrRecipient",
+                "Purpose"
+            ));
+
+            foreach (var accountStatement in _accountStatements)
             {
                 foreach (var transactionInfo in accountStatement.GetTransactionInfos())
                 {
                     stringBuilder.AppendLine(string.Join(";", transactionInfo));
                 }
             }
-            
+
             File.WriteAllText(csvTransactionsFullFileName, stringBuilder.ToString());
+        }
+
+        private static void CreateGnuCashTransactionsCsv()
+        {
+            var csvGnuCashTransactionsFullFileName = 
+                Directory.GetCurrentDirectory() + @"\TransactionsGnuCash.csv";
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine(string.Join(
+                ";",
+                "Datum",
+                "Nr",
+                "Beschreibung",
+                "Bemerkung",
+                "Konto",
+                "Einzahlung",
+                "Abhebung",
+                "Saldo"
+            ));
+
+            foreach (var accountStatement in _accountStatements)
+            {
+                foreach (var transactionInfo in accountStatement.GetGnuCashTransactionInfos())
+                {
+                    stringBuilder.AppendLine(string.Join(";", transactionInfo));
+                }
+            }
+
+            File.WriteAllText(csvGnuCashTransactionsFullFileName, stringBuilder.ToString());
         }
     }
 }
