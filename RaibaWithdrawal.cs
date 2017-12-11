@@ -20,42 +20,51 @@ namespace BankAccountStatementConverter
 
         public void Parse(List<string> content, int year)
         {
-            var header = content[0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Date
-            if (DateTime.TryParse(header[0] + year, out var date))
+            if (content.Count > 0)
             {
-                Date = date;
+                var header = content[0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Date
+                if (DateTime.TryParse(header[0] + year, out var date))
+                {
+                    Date = date;
+                }
+
+                // Title
+                string title = null;
+                for (var i = 2; i < header.Length - 2; i++)
+                {
+                    title += header[i] + " ";
+                }
+                Title = title?.Trim();
+
+                // Amount
+                if (double.TryParse(header[header.Length - 2], out var amount))
+                {
+                    Amount = amount;
+                }
             }
 
-            // Title
-            string title = null;
-            for (var i = 2; i < header.Length - 2; i++)
+            if (content.Count > 1)
             {
-                title += header[i] + " ";
-            }
-            Title = title?.Trim();
-
-            // Amount
-            if (double.TryParse(header[header.Length - 2], out var amount))
-            {
-                Amount = amount;
+                // Recipient
+                Recipient = content[1].Trim();
             }
 
-            // Recipient
-            Recipient = content[1].Trim();
-
-            // Purpose
-            string purpose = null;
-            for (var i = 2; i < content.Count; i++)
+            if (content.Count > 2)
             {
-                purpose += content[i];
-            }
-            if (purpose != null)
-            {
-                // Replace multiple whitespaces with one space, 
-                // then trim whitespaces at the beginning and end
-                Purpose = Regex.Replace(purpose, @"\s+", " ").Trim();
+                // Purpose
+                string purpose = null;
+                for (var i = 2; i < content.Count; i++)
+                {
+                    purpose += content[i];
+                }
+                if (purpose != null)
+                {
+                    // Replace multiple whitespaces with one space, 
+                    // then trim whitespaces at the beginning and end
+                    Purpose = Regex.Replace(purpose, @"\s+", " ").Trim();
+                }
             }
         }
 

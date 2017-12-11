@@ -49,30 +49,35 @@ namespace BankAccountStatementConverter
             var lines = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             // Account number
-            _accountNumberSuccess = int.TryParse(lines[8].Trim(), out _accountNumber) && _accountNumber == 4111;
+            _accountNumberSuccess = 
+                int.TryParse(lines[8].Trim(), out _accountNumber) && _accountNumber == 4111;
 
             // Statement number and year
             if (lines[9].Contains("/"))
             {
-                var statementNumber = lines[9].Substring(0, lines[9].IndexOf("/", StringComparison.Ordinal));
-                _statementNumberSuccess = int.TryParse(statementNumber.Trim(), out _statementNumber);
+                var statementNumber = 
+                    lines[9].Substring(0, lines[9].IndexOf("/", StringComparison.Ordinal)).Trim();
+                _statementNumberSuccess = int.TryParse(statementNumber, out _statementNumber);
 
                 var statementYear =
-                    lines[9].Substring(lines[9].IndexOf("/", StringComparison.Ordinal) + 1);
-                _statementYearSuccess = int.TryParse(statementYear.Trim(), out _statementYear); 
+                    lines[9].Substring(lines[9].IndexOf("/", StringComparison.Ordinal) + 1).Trim();
+                _statementYearSuccess = int.TryParse(statementYear, out _statementYear); 
             }
 
             // Table start
             _tableStartSuccess = lines[25] == "---------------------------------------------------";
 
             // Old balance date
-            _oldAccountBalanceDateSuccess = DateTime.TryParse(
-                lines[26].Split(new [] {' '}, StringSplitOptions.RemoveEmptyEntries).Last(), 
-                out _oldAccountBalanceDate);
+            _oldAccountBalanceDateSuccess = lines[26].Contains("alter Kontostand vom") &&
+                DateTime.TryParse(
+                    lines[26].Split(new [] {' '}, StringSplitOptions.RemoveEmptyEntries).Last(), 
+                    out _oldAccountBalanceDate);
 
             // Old balance value
-            var oldAccountBalanceLineSplit = lines[28].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            _oldAccountBalanceSuccess = double.TryParse(oldAccountBalanceLineSplit.First(), out var oldAccountBalance);
+            var oldAccountBalanceLineSplit = 
+                lines[28].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            _oldAccountBalanceSuccess = 
+                double.TryParse(oldAccountBalanceLineSplit.First(), out var oldAccountBalance);
 
             _oldAccountBalanceSuccess = TrySetSign(
                 oldAccountBalanceLineSplit.Last(),
@@ -113,14 +118,13 @@ namespace BankAccountStatementConverter
                 else if (line.Contains("neuer Kontostand vom"))
                 {
                     newAccountBalanceLineNumber = index;
-
-                    if (transaction != null)
-                    {
-                        transactions.Add(transaction);
-                    }
-
                     break;
                 }
+            }
+
+            if (transaction != null)
+            {
+                transactions.Add(transaction);
             }
 
             // Add transactions
@@ -130,12 +134,12 @@ namespace BankAccountStatementConverter
                 {
                     case "H":
                         var deposit = new RaibaDeposit();
-                        deposit.Parse(transaction, _statementYear);
+                        deposit.Parse(t, _statementYear);
                         _transactions.Add(deposit);
                         break;
                     case "S":
                         var withdrawal = new RaibaWithdrawal();
-                        withdrawal.Parse(transaction, _statementYear);
+                        withdrawal.Parse(t, _statementYear);
                         _transactions.Add(withdrawal);
                         break;
                     default:
@@ -144,19 +148,8 @@ namespace BankAccountStatementConverter
                 }
             }
 
-            // Add balance value to each transaction
-            var balance = _oldAccountBalance;
-            foreach (var t in _transactions)
-            {
-                balance = t.AddBalance(balance);
-            }
-            if (_transactions.Last().Balance.Equals(_newAccountBalance) == false)
-            {
-                _transactionsSuccess = false;
-            }
-
             // Verify transaction count
-                _transactionCount = 0;
+            _transactionCount = 0;
             foreach (var line in lines)
             {
                 if (LineStartsWithTwoDates(line))
@@ -187,6 +180,17 @@ namespace BankAccountStatementConverter
             if (_newAccountBalanceSuccess)
             {
                 _newAccountBalance = newAccountBalance * sign;
+            }
+
+            // Add balance value to each transaction
+            var balance = _oldAccountBalance;
+            foreach (var t in _transactions)
+            {
+                balance = t.AddBalance(balance);
+            }
+            if (_transactions.Last().Balance.Equals(_newAccountBalance) == false)
+            {
+                _transactionsSuccess = false;
             }
         }
 
