@@ -59,6 +59,6 @@ namespace BankAccountStatementConverter
         /// Returns a string array to create a CSV for GnuCash
         /// </summary>
         /// <returns></returns>
-        string[] GetGnuCashTransactionInfos(string number, string account);
+        string[] GetGnuCashTransactionInfos(string number);
     }
 }

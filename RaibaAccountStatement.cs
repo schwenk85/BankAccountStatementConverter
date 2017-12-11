@@ -203,8 +203,7 @@ namespace BankAccountStatementConverter
         {
             return _transactions.Select(
                 transaction => transaction.GetGnuCashTransactionInfos(
-                    _statementNumber.ToString() + "-" + _statementYear.ToString(), 
-                    "RaiBa " + _accountNumber));
+                    _statementNumber.ToString() + "-" + _statementYear.ToString()));
         }
 
         public string[] GetAccountStatementInfos()

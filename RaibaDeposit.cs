@@ -87,7 +87,7 @@ namespace BankAccountStatementConverter
             };
         }
 
-        public string[] GetGnuCashTransactionInfos(string number, string account)
+        public string[] GetGnuCashTransactionInfos(string number)
         {
             // Date, Number, Description, Remark, Account, Deposit, Withdrawal, Balance
             return new[]
@@ -96,7 +96,6 @@ namespace BankAccountStatementConverter
                 number,
                 Sender + " - " + Title,
                 Purpose,
-                account,
                 $"{Amount:0.00}",
                 $"{0:0.00}",
                 $"{Balance:0.00}"

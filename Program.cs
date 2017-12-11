@@ -10,8 +10,6 @@ namespace BankAccountStatementConverter
 
         static void Main(string[] args)
         {
-            //TODO: testen
-
             _accountStatements = new List<RaibaAccountStatement>();
 
             ReadPdfs();
@@ -106,7 +104,6 @@ namespace BankAccountStatementConverter
                 "Nr",
                 "Beschreibung",
                 "Bemerkung",
-                "Konto",
                 "Einzahlung",
                 "Abhebung",
                 "Saldo"
