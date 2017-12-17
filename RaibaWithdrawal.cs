@@ -86,7 +86,7 @@ namespace BankAccountStatementConverter
                 Purpose
             };
         }
-        
+
         public string[] GetGnuCashTransactionInfos(string number)
         {
             // Date, Number, Description, Remark, Account, Deposit, Withdrawal, Balance
@@ -99,6 +99,22 @@ namespace BankAccountStatementConverter
                 $"{0:0.00}",
                 $"{Amount:0.00}",
                 $"{Balance:0.00}"
+            };
+        }
+
+        public string[] GetHomeBankTransactionInfos()
+        {
+            // date, payment, info, payee, memo, amount, category, tags
+            return new[]
+            {
+                Date.ToString("dd-MM-yy"),
+                string.Empty, //TODO
+                Title,
+                Recipient,
+                Purpose,
+                $"{-Amount:0.00}",
+                string.Empty, //TODO
+                $"Kontrolle:{Balance:0.00}€"
             };
         }
     }

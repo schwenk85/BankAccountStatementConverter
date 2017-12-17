@@ -16,6 +16,7 @@ namespace BankAccountStatementConverter
             CreateAccountStatementsCsv();
             CreateTransactionsCsv();
             CreateGnuCashTransactionsCsv();
+            CreateHomeBankTransactionsCsv();
         }
 
         private static void ReadPdfs()
@@ -94,7 +95,7 @@ namespace BankAccountStatementConverter
 
         private static void CreateGnuCashTransactionsCsv()
         {
-            var csvGnuCashTransactionsFullFileName = 
+            var csvTransactionsFullFileName = 
                 Directory.GetCurrentDirectory() + @"\TransactionsGnuCash.csv";
 
             var stringBuilder = new StringBuilder();
@@ -117,7 +118,38 @@ namespace BankAccountStatementConverter
                 }
             }
 
-            File.WriteAllText(csvGnuCashTransactionsFullFileName, stringBuilder.ToString());
+            File.WriteAllText(csvTransactionsFullFileName, stringBuilder.ToString());
+        }
+
+        private static void CreateHomeBankTransactionsCsv()
+        {
+            // file:///C:/Program%20Files%20(x86)/HomeBank/share/homebank/help/index.html
+
+            var csvTransactionsFullFileName =
+                Directory.GetCurrentDirectory() + @"\TransactionsHomeBank.csv";
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine(string.Join(
+                ";",
+                "date", // format must be DD-MM-YY
+                "payment", // from 0=none to 10=FI fee
+                "info", // a string
+                "payee", // a payee name
+                "memo", // a string
+                "amount", // a number with a '.' or ',' as decimal separator, ex: -24.12 or 36,75
+                "category", // a full category name (category, or category:subcategory)
+                "tags" // tags separated by space; tag is mandatory since v4.5
+            ));
+
+            foreach (var accountStatement in _accountStatements)
+            {
+                foreach (var transactionInfo in accountStatement.GetHomeBankTransactionInfos())
+                {
+                    stringBuilder.AppendLine(string.Join(";", transactionInfo));
+                }
+            }
+
+            File.WriteAllText(csvTransactionsFullFileName, stringBuilder.ToString());
         }
     }
 }

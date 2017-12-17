@@ -206,6 +206,11 @@ namespace BankAccountStatementConverter
                     _statementNumber.ToString() + "-" + _statementYear.ToString()));
         }
 
+        public IEnumerable<string[]> GetHomeBankTransactionInfos()
+        {
+            return _transactions.Select(transaction => transaction.GetHomeBankTransactionInfos());
+        }
+
         public string[] GetAccountStatementInfos()
         {
             return new []

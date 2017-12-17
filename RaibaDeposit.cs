@@ -101,5 +101,21 @@ namespace BankAccountStatementConverter
                 $"{Balance:0.00}"
             };
         }
+
+        public string[] GetHomeBankTransactionInfos()
+        {
+            // date, payment, info, payee, memo, amount, category, tags
+            return new[]
+            {
+                Date.ToString("dd-MM-yy"),
+                string.Empty, //TODO
+                Title,
+                Sender,
+                Purpose,
+                $"{Amount:0.00}",
+                string.Empty, //TODO
+                $"Kontrolle:{Balance:0.00}€"
+            };
+        }
     }
 }
